@@ -28,7 +28,7 @@ This file is part of hardware agnostic I2C driver for AXP173:
 https://github.com/tuupola/axp173
 
 SPDX-License-Identifier: MIT
-Version: 0.6.0-dev
+Version: 0.1.0-dev
 
 */
 
@@ -45,15 +45,10 @@ static const axp173_init_command_t init_commands[] = {
 #ifdef AXP173_INCLUDE_SDKCONFIG_H
     /* Currently you have to use menuconfig to be able to use axp173_init() */
     {AXP173_DCDC1_VOLTAGE, {CONFIG_AXP173_DCDC1_VOLTAGE}, 1},
-    {AXP173_DCDC3_VOLTAGE, {CONFIG_AXP173_DCDC3_VOLTAGE}, 1},
+    {AXP173_LDO4_VOLTAGE, {CONFIG_AXP173_LDO4_VOLTAGE}, 1},
     {AXP173_LDO23_VOLTAGE, {CONFIG_AXP173_LDO23_VOLTAGE}, 1},
-    {AXP173_GPIO0_LDOIO0_VOLTAGE, {CONFIG_AXP173_GPIO0_LDOIO0_VOLTAGE}, 1},
     {AXP173_DCDC13_LDO23_CONTROL, {CONFIG_AXP173_DCDC13_LDO23_CONTROL}, 1},
     {AXP173_EXTEN_DCDC2_CONTROL, {CONFIG_AXP173_EXTEN_DCDC2_CONTROL}, 1},
-    {AXP173_GPIO0_CONTROL, {CONFIG_AXP173_GPIO0_CONTROL}, 1},
-    {AXP173_GPIO1_CONTROL, {CONFIG_AXP173_GPIO1_CONTROL}, 1},
-    {AXP173_GPIO2_CONTROL, {CONFIG_AXP173_GPIO2_CONTROL}, 1},
-    {AXP173_GPIO43_FUNCTION_CONTROL, {CONFIG_AXP173_GPIO43_FUNCTION_CONTROL}, 1},
     {AXP173_ADC_ENABLE_1, {CONFIG_AXP173_ADC_ENABLE_1}, 1},
     {AXP173_CHARGE_CONTROL_1, {CONFIG_AXP173_CHARGE_CONTROL_1}, 1},
     {AXP173_BATTERY_CHARGE_CONTROL, {CONFIG_AXP173_BATTERY_CHARGE_CONTROL}, 1},
@@ -243,19 +238,6 @@ axp173_err_t axp173_ioctl(const axp173_t *axp, int command, ...)
         tmp &= ~0b00000100;
         return axp->write(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
         break;
-    /* This is currently untested. */
-    case AXP173_GPIO2_SET_LEVEL:
-        axp->read(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
-        va_start(ap, command);
-        argument = (uint8_t) va_arg(ap, int);
-        va_end(ap);
-        if (argument) {
-            tmp |= 0b00000100;
-        } else {
-            tmp &= ~0b00000100;
-        }
-        return axp->write(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
-        break;
     case AXP173_LDO3_ENABLE:
         axp->read(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
         tmp |= 0b00001000;
@@ -282,44 +264,18 @@ axp173_err_t axp173_ioctl(const axp173_t *axp, int command, ...)
         tmp &= ~0b00000001;
         return axp->write(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
         break;
-    case AXP173_DCDC3_ENABLE:
+    case AXP173_LDO4_ENABLE:
         axp->read(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
         tmp |= 0b00000010;
         return axp->write(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
         break;
-    case AXP173_DCDC3_DISABLE:
+    case AXP173_LDO4_DISABLE:
         axp->read(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
         tmp &= ~0b00000010;
         return axp->write(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
         break;
-    case AXP173_GPIO1_SET_LEVEL:
-    case AXP173_GPIO4_SET_LEVEL:
-        axp->read(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
-        va_start(ap, command);
-        argument = (uint8_t) va_arg(ap, int);
-        va_end(ap);
-        if (argument) {
-            tmp |= 0b00000010;
-        } else {
-            tmp &= ~0b00000010;
-        }
-        return axp->write(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
-        break;
-    /* This is currently untested. */
-    case AXP173_GPIO0_SET_LEVEL:
-        axp->read(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
-        va_start(ap, command);
-        argument = (uint8_t) va_arg(ap, int);
-        va_end(ap);
-        if (argument) {
-            tmp |= 0b00000001;
-        } else {
-            tmp &= ~0b00000001;
-        }
-        return axp->write(axp->handle, AXP173_ADDRESS, reg, &tmp, 1);
-        break;
     case AXP173_DCDC1_SET_VOLTAGE:
-    case AXP173_DCDC3_SET_VOLTAGE:
+    case AXP173_LDO4_SET_VOLTAGE:
         va_start(ap, command);
         argument = (uint16_t) va_arg(ap, int);
         va_end(ap);
