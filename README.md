@@ -1,4 +1,4 @@
-# Platform agnostic I2C driver for AXP192 PMU
+# Platform agnostic I2C driver for AXP173 PMU
 
 To use this library you must to provide functions for both reading and writing the I2C bus. Function definitions must be the following.
 
@@ -11,7 +11,7 @@ Where `address` is the I2C address, `reg` is the register to read or write, `buf
 
 ## Configuration
 
-With platforms such as ESP-IDF you can use menuconfig and a single call to `axp192_init()` to configure the chip. When configuring pay attention to which power rails are enabled and what voltage they are configured to.
+With platforms such as ESP-IDF you can use menuconfig and a single call to `axp173_init()` to configure the chip. When configuring pay attention to which power rails are enabled and what voltage they are configured to.
 
 Pay especially attention to `DCDC1` which is usually used for powering the MCU. Your program disabling the power from the MCU upon boot basically bricks the board. Reviving the board from this situation is possible but might be difficult.
 
@@ -20,10 +20,10 @@ $ make menuconfig
 ```
 
 ```c
-#include "axp192.h"
+#include "axp173.h"
 #include "user_i2c.h"
 
-axp192_t axp;
+axp173_t axp;
 
 /* Add pointers to the glue functions. */
 axp.read = &user_i2c_read;
@@ -32,16 +32,16 @@ axp.write = &user_i2c_write;
 /* You could set the handle here. It can be pointer to anything. */
 axp.handle = NULL;
 
-axp192_init(&axp);
+axp173_init(&axp);
 ```
 
-If your system does not use menuconfig you cannot use `axp192_init()`. Instead configure the chip manually with the needed calls to `axp192_ioctl()` function. Again pay attention when configuring the power rails. You do not want to shut down the MCU.
+If your system does not use menuconfig you cannot use `axp173_init()`. Instead configure the chip manually with the needed calls to `axp173_ioctl()` function. Again pay attention when configuring the power rails. You do not want to shut down the MCU.
 
 ```c
-#include "axp192.h"
+#include "axp173.h"
 #include "user_i2c.h"
 
-axp192_t axp;
+axp173_t axp;
 
 /* Add pointers to HAL functions. */
 axp.read = &user_i2c_read;
@@ -51,46 +51,46 @@ axp.write = &user_i2c_write;
 axp.handle = NULL;
 
 /* Be careful when setting voltages not to brick your board. */
-axp192_ioctl(&axp, AXP192_DCDC1_SET_VOLTAGE, 3300);
-axp192_ioctl(&axp, AXP192_DCDC2_SET_VOLTAGE, 2275);
-axp192_ioctl(&axp, AXP192_DCDC3_SET_VOLTAGE, 3300);
-axp192_ioctl(&axp, AXP192_LDOIO0_SET_VOLTAGE, 3300);
-axp192_ioctl(&axp, AXP192_LDO2_SET_VOLTAGE, 3300);
-axp192_ioctl(&axp, AXP192_LDO3_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_DCDC1_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_DCDC2_SET_VOLTAGE, 2275);
+axp173_ioctl(&axp, AXP173_DCDC3_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_LDOIO0_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_LDO2_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_LDO3_SET_VOLTAGE, 3300);
 
-axp192_ioctl(&axp, AXP192_DCDC1_ENABLE);
-axp192_ioctl(&axp, AXP192_DCDC2_ENABLE);
-axp192_ioctl(&axp, AXP192_DCDC3_ENABLE);
-axp192_ioctl(&axp, AXP192_LDOIO0_ENABLE);
-axp192_ioctl(&axp, AXP192_LDO2_ENABLE);
-axp192_ioctl(&axp, AXP192_LDO3_ENABLE);
-axp192_ioctl(&axp, AXP192_EXTEN_ENABLE);
+axp173_ioctl(&axp, AXP173_DCDC1_ENABLE);
+axp173_ioctl(&axp, AXP173_DCDC2_ENABLE);
+axp173_ioctl(&axp, AXP173_DCDC3_ENABLE);
+axp173_ioctl(&axp, AXP173_LDOIO0_ENABLE);
+axp173_ioctl(&axp, AXP173_LDO2_ENABLE);
+axp173_ioctl(&axp, AXP173_LDO3_ENABLE);
+axp173_ioctl(&axp, AXP173_EXTEN_ENABLE);
 
-axp192_ioctl(&axp, AXP192_COULOMB_COUNTER_ENABLE);
+axp173_ioctl(&axp, AXP173_COULOMB_COUNTER_ENABLE);
 ```
 
 ### Usage
 
-Use `axp192_read()` to read the values of the registers. All the
+Use `axp173_read()` to read the values of the registers. All the
 ADC registers will be read as floats. All other registers will be treated as raw bytes.
-See `axp192.h` or datasheet for all possible registers and how to intepret the values.
+See `axp173.h` or datasheet for all possible registers and how to intepret the values.
 
 ```c
 float vacin, iacin, vvbus, ivbus, temp, pbat, vbat, icharge, idischarge, vaps, cbat;
 
 /* All ADC registers will be read as floats. */
-axp192_read(&axp, AXP192_ACIN_VOLTAGE, &vacin);
-axp192_read(&axp, AXP192_ACIN_CURRENT, &iacin);
-axp192_read(&axp, AXP192_VBUS_VOLTAGE, &vvbus);
-axp192_read(&axp, AXP192_VBUS_CURRENT, &ivbus);
-axp192_read(&axp, AXP192_TEMP, &temp);
-axp192_read(&axp, AXP192_TS_INPUT, &vts);
-axp192_read(&axp, AXP192_BATTERY_POWER, &pbat);
-axp192_read(&axp, AXP192_BATTERY_VOLTAGE, &vbat);
-axp192_read(&axp, AXP192_CHARGE_CURRENT, &icharge);
-axp192_read(&axp, AXP192_DISCHARGE_CURRENT, &idischarge);
-axp192_read(&axp, AXP192_APS_VOLTAGE, &vaps);
-axp192_read(&axp, AXP192_COULOMB_COUNTER, &cbat);
+axp173_read(&axp, AXP173_ACIN_VOLTAGE, &vacin);
+axp173_read(&axp, AXP173_ACIN_CURRENT, &iacin);
+axp173_read(&axp, AXP173_VBUS_VOLTAGE, &vvbus);
+axp173_read(&axp, AXP173_VBUS_CURRENT, &ivbus);
+axp173_read(&axp, AXP173_TEMP, &temp);
+axp173_read(&axp, AXP173_TS_INPUT, &vts);
+axp173_read(&axp, AXP173_BATTERY_POWER, &pbat);
+axp173_read(&axp, AXP173_BATTERY_VOLTAGE, &vbat);
+axp173_read(&axp, AXP173_CHARGE_CURRENT, &icharge);
+axp173_read(&axp, AXP173_DISCHARGE_CURRENT, &idischarge);
+axp173_read(&axp, AXP173_APS_VOLTAGE, &vaps);
+axp173_read(&axp, AXP173_COULOMB_COUNTER, &cbat);
 
 printf(
     "vacin: %.2fV iacin: %.2fA vvbus: %.2fV ivbus: %.2fA vts: %.2fV temp: %.0fC "
@@ -103,62 +103,62 @@ printf(
 uint8_t power, charge;
 
 /* All non ADC registers will be read as a raw bytes. */
-axp192_read(&axp, AXP192_POWER_STATUS, &power);
-axp192_read(&axp, AXP192_CHARGE_STATUS, &charge);
+axp173_read(&axp, AXP173_POWER_STATUS, &power);
+axp173_read(&axp, AXP173_CHARGE_STATUS, &charge);
 
 printf("power: 0x%02x charge: 0x%02x", power, charge);
 ```
 
-You can use `axp192_write()` to write a single raw byte directly to a register.
+You can use `axp173_write()` to write a single raw byte directly to a register.
 
 ```c
 uint8_t buffer = 0xde;
-axp192_write(&axp, AXP192_DATA_BUFFER0, &buffer);
+axp173_write(&axp, AXP173_DATA_BUFFER0, &buffer);
 ```
 
-However common configuration tasks are also provided as an `axp192_ioctl()` call.
+However common configuration tasks are also provided as an `axp173_ioctl()` call.
 
 ```c
-axp192_ioctl(&axp, AXP192_DCDC1_SET_VOLTAGE, 3300);
-axp192_ioctl(&axp, AXP192_DCDC2_SET_VOLTAGE, 2275);
-axp192_ioctl(&axp, AXP192_DCDC3_SET_VOLTAGE, 3300);
-axp192_ioctl(&axp, AXP192_LDOIO0_SET_VOLTAGE, 3300);
-axp192_ioctl(&axp, AXP192_LDO2_SET_VOLTAGE, 3300);
-axp192_ioctl(&axp, AXP192_LDO3_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_DCDC1_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_DCDC2_SET_VOLTAGE, 2275);
+axp173_ioctl(&axp, AXP173_DCDC3_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_LDOIO0_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_LDO2_SET_VOLTAGE, 3300);
+axp173_ioctl(&axp, AXP173_LDO3_SET_VOLTAGE, 3300);
 
-axp192_ioctl(&axp, AXP192_EXTEN_ENABLE);
-axp192_ioctl(&axp, AXP192_EXTEN_DISABLE);
+axp173_ioctl(&axp, AXP173_EXTEN_ENABLE);
+axp173_ioctl(&axp, AXP173_EXTEN_DISABLE);
 
-axp192_ioctl(&axp, AXP192_LDOIO0_ENABLE);
-axp192_ioctl(&axp, AXP192_LDOIO0_DISABLE);
+axp173_ioctl(&axp, AXP173_LDOIO0_ENABLE);
+axp173_ioctl(&axp, AXP173_LDOIO0_DISABLE);
 
-axp192_ioctl(&axp, AXP192_LDO2_ENABLE);
-axp192_ioctl(&axp, AXP192_LDO2_DISABLE);
+axp173_ioctl(&axp, AXP173_LDO2_ENABLE);
+axp173_ioctl(&axp, AXP173_LDO2_DISABLE);
 
-axp192_ioctl(&axp, AXP192_LDO3_ENABLE);
-axp192_ioctl(&axp, AXP192_LDO3_DISABLE);
+axp173_ioctl(&axp, AXP173_LDO3_ENABLE);
+axp173_ioctl(&axp, AXP173_LDO3_DISABLE);
 
 /* Do not disable DCDC1 unless you know what you are doing. */
-axp192_ioctl(&axp, AXP192_DCDC1_ENABLE);
-axp192_ioctl(&axp, AXP192_DCDC1_DISABLE);
+axp173_ioctl(&axp, AXP173_DCDC1_ENABLE);
+axp173_ioctl(&axp, AXP173_DCDC1_DISABLE);
 
-axp192_ioctl(&axp, AXP192_DCDC2_ENABLE);
-axp192_ioctl(&axp, AXP192_DCDC2_DISABLE);
+axp173_ioctl(&axp, AXP173_DCDC2_ENABLE);
+axp173_ioctl(&axp, AXP173_DCDC2_DISABLE);
 
-axp192_ioctl(&axp, AXP192_DCDC3_ENABLE);
-axp192_ioctl(&axp, AXP192_DCDC3_DISABLE);
+axp173_ioctl(&axp, AXP173_DCDC3_ENABLE);
+axp173_ioctl(&axp, AXP173_DCDC3_DISABLE);
 
-axp192_ioctl(&axp, AXP192_GPIO0_SET_LEVEL, AXP192_HIGH);
-axp192_ioctl(&axp, AXP192_GPIO0_SET_LEVEL, AXP192_LOW);
+axp173_ioctl(&axp, AXP173_GPIO0_SET_LEVEL, AXP173_HIGH);
+axp173_ioctl(&axp, AXP173_GPIO0_SET_LEVEL, AXP173_LOW);
 
-axp192_ioctl(&axp, AXP192_GPIO1_SET_LEVEL, AXP192_HIGH);
-axp192_ioctl(&axp, AXP192_GPIO1_SET_LEVEL, AXP192_LOW);
+axp173_ioctl(&axp, AXP173_GPIO1_SET_LEVEL, AXP173_HIGH);
+axp173_ioctl(&axp, AXP173_GPIO1_SET_LEVEL, AXP173_LOW);
 
-axp192_ioctl(&axp, AXP192_GPIO2_SET_LEVEL, AXP192_HIGH);
-axp192_ioctl(&axp, AXP192_GPIO2_SET_LEVEL, AXP192_LOW);
+axp173_ioctl(&axp, AXP173_GPIO2_SET_LEVEL, AXP173_HIGH);
+axp173_ioctl(&axp, AXP173_GPIO2_SET_LEVEL, AXP173_LOW);
 
-axp192_ioctl(&axp, AXP192_GPIO4_SET_LEVEL, AXP192_HIGH);
-axp192_ioctl(&axp, AXP192_GPIO4_SET_LEVEL, AXP192_LOW);
+axp173_ioctl(&axp, AXP173_GPIO4_SET_LEVEL, AXP173_HIGH);
+axp173_ioctl(&axp, AXP173_GPIO4_SET_LEVEL, AXP173_LOW);
 ```
 
 ## Notes
