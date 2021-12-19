@@ -1,4 +1,6 @@
-# Platform agnostic I2C driver for AXP173 PMU
+This is not in usable state yet.
+
+# [WIP] Platform agnostic I2C driver for AXP173 PMU
 
 To use this library you must to provide functions for both reading and writing the I2C bus. Function definitions must be the following.
 
