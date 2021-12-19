@@ -94,7 +94,7 @@ static axp173_err_t axp173_read_adc(const axp173_t *axp, uint8_t reg, float *buf
         sensitivity = 1.7 / 1000;
         break;
     case AXP173_ACIN_CURRENT:
-        /* 0.375mA per LSB */
+        /* 0.625mA per LSB */
         sensitivity = 0.625 / 1000;
         break;
     case AXP173_VBUS_CURRENT:
